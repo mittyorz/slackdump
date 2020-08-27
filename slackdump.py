@@ -111,6 +111,7 @@ def main():
     else: channels=[x for x in ochannels["channels"] if x["name"] in channel_names]
 
     #get messages and their replies
+    channel_users = {}
     for ch in channels:
         param = GetConversationsHistoryRequestParam(token,ch["id"])
         param["limits"]=1000
@@ -129,6 +130,10 @@ def main():
         #50 limits per minute に引っかかりそう
         #適当に待った方がいいかも
         for msg in history["messages"]:
+            if "user" in msg:
+                for u in users["members"]:
+                    if msg["user"] == u["id"]:
+                        channel_users[msg["user"]] = u
             if "thread_ts" in msg:
                 param=GetConversationsRepliesRequestParam(token,ch["id"],msg["ts"])
                 param["limits"]=1000
@@ -149,6 +154,8 @@ def main():
         json.dump(users,fp,ensure_ascii=False,indent=4)
     with open("channels.json","w",encoding="utf8") as fp:
         json.dump(channels,fp,ensure_ascii=False,indent=4)
+    with open("channel-users.json","w",encoding="utf8") as fp:
+        json.dump(channel_users,fp,ensure_ascii=False,indent=4)
 
 if __name__ == "__main__":
     main()
