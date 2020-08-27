@@ -99,7 +99,12 @@ def main():
         users["members"]+=_users["members"]
 
     param=GetConversationsListRequestParam(token)
-    ochannels=GetConversationsList(param)
+    _ochannels=GetConversationsList(param)
+    ochannels=copy.deepcopy(_ochannels)
+    while _ochannels["response_metadata"]["next_cursor"]:
+        param["cursor"] = _ochannels["response_metadata"]["next_cursor"]
+        _ochannels=GetConversationsList(param)
+        ochannels["channels"]+=_ochannels["channels"]
 
     #filter channls by channel names
     if channel_names[0]=="*": channels=copy.deepcopy(ochannels)
