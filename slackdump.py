@@ -8,7 +8,6 @@ import os,sys,re
 import json
 import argparse
 import copy
-import time
 
 BASE_URL='https://slack.com/api/'
 
@@ -100,7 +99,6 @@ def main():
         param["cursor"] = _users["response_metadata"]["next_cursor"]
         _users = GetUsersList(param)
         users["members"]+=_users["members"]
-        time.sleep(3)   # rate limit of users.list is 20+ per minute
     if "response_metadata" in users: del users["response_metadata"]
     print(" done", flush=True)
 
@@ -113,7 +111,6 @@ def main():
         param["cursor"] = _ochannels["response_metadata"]["next_cursor"]
         _ochannels=GetConversationsList(param)
         ochannels["channels"]+=_ochannels["channels"]
-        time.sleep(3)   # rate limit of conversations.list is 20+ per minute
     print(" done", flush=True)
 
     #filter channls by channel names
@@ -136,7 +133,6 @@ def main():
             param["cursor"] = _history["response_metadata"]["next_cursor"]
             _history = GetConversationsHistory(param)
             history["messages"]+=_history["messages"]
-            time.sleep(1)   # rate limit of conversations.history is 50+ per minute
         history["has_more"]=False
         if "response_metadata" in history: del history["response_metadata"]
 
@@ -157,7 +153,6 @@ def main():
                     param["cursor"] = _replies["response_metadata"]["next_cursor"]
                     _replies = GetConversationsReplies(param)
                     replies["messages"]+=_replies["messages"]
-                    time.sleep(1)   # rate limit of conversations.replies is 50+ per minute
                 replies["has_more"]=False
                 if "response_metadata" in replies: del replies["response_metadata"]
                 replies["messages"]=[x for x in replies["messages"] if x["thread_ts"] != x["ts"]]
