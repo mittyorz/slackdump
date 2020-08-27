@@ -97,6 +97,7 @@ def main():
         param["cursor"] = _users["response_metadata"]["next_cursor"]
         _users = GetUsersList(param)
         users["members"]+=_users["members"]
+    if "response_metadata" in users: del users["response_metadata"]
 
     param=GetConversationsListRequestParam(token)
     _ochannels=GetConversationsList(param)
