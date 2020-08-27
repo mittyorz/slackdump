@@ -129,7 +129,7 @@ def main():
         #50 limits per minute に引っかかりそう
         #適当に待った方がいいかも
         for msg in history["messages"]:
-            if "replies" in msg:
+            if "thread_ts" in msg:
                 param=GetConversationsRepliesRequestParam(token,ch["id"],msg["ts"])
                 param["limits"]=1000
                 _replies=GetConversationsReplies(param)
@@ -140,7 +140,7 @@ def main():
                     replies["messages"]+=_replies["messages"]
                 replies["has_more"]=False
                 if "response_metadata" in replies: del replies["response_metadata"]
-                replies["messages"]=[x for x in replies["messages"] if not "replies" in x]
+                replies["messages"]=[x for x in replies["messages"] if x["thread_ts"] != x["ts"]]
                 msg["replies_body"]=replies
         ch["history"]=history
 
