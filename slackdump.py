@@ -91,13 +91,18 @@ def main():
 
     #
     param=GetUsersListRequestParam(token)
-    users=GetUsersList(param)
+    _users=GetUsersList(param)
+    users=copy.deepcopy(_users)
+    while _users["response_metadata"]["next_cursor"]:
+        param["cursor"] = _users["response_metadata"]["next_cursor"]
+        _users = GetUsersList(param)
+        users["members"]+=_users["members"]
 
     param=GetConversationsListRequestParam(token)
     ochannels=GetConversationsList(param)
 
     #filter channls by channel names
-    if channel_names[0]=="*": channels=copy.deppcopy(ochannels)
+    if channel_names[0]=="*": channels=copy.deepcopy(ochannels)
     else: channels=[x for x in ochannels["channels"] if x["name"] in channel_names]
 
     #get messages and their replies
