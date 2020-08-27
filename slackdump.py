@@ -91,24 +91,30 @@ def main():
     latest_ts = args.until
 
     #
+    print("retrieving users list .", end="", flush=True)
     param=GetUsersListRequestParam(token)
     _users=GetUsersList(param)
     users=copy.deepcopy(_users)
     while _users["response_metadata"]["next_cursor"]:
+        print(".", end="", flush=True)
         param["cursor"] = _users["response_metadata"]["next_cursor"]
         _users = GetUsersList(param)
         users["members"]+=_users["members"]
         time.sleep(3)   # rate limit of users.list is 20+ per minute
     if "response_metadata" in users: del users["response_metadata"]
+    print(" done", flush=True)
 
+    print("retrieving channels list .", end="", flush=True)
     param=GetConversationsListRequestParam(token)
     _ochannels=GetConversationsList(param)
     ochannels=copy.deepcopy(_ochannels)
     while _ochannels["response_metadata"]["next_cursor"]:
+        print(".", end="", flush=True)
         param["cursor"] = _ochannels["response_metadata"]["next_cursor"]
         _ochannels=GetConversationsList(param)
         ochannels["channels"]+=_ochannels["channels"]
         time.sleep(3)   # rate limit of conversations.list is 20+ per minute
+    print(" done", flush=True)
 
     #filter channls by channel names
     if channel_names[0]=="*": channels=copy.deepcopy(ochannels)
@@ -117,6 +123,7 @@ def main():
     #get messages and their replies
     channel_users = {}
     for ch in channels:
+        print("retrieving conversation's history .", end="", flush=True)
         param = GetConversationsHistoryRequestParam(token,ch["id"])
         param["limits"]=1000
         if latest_ts!='now': param["latest"]=latest_ts
@@ -125,6 +132,7 @@ def main():
         history=copy.deepcopy(_history)
         #TODO: next_cursor
         while _history["has_more"]:
+            print(".", end="", flush=True)
             param["cursor"] = _history["response_metadata"]["next_cursor"]
             _history = GetConversationsHistory(param)
             history["messages"]+=_history["messages"]
@@ -145,6 +153,7 @@ def main():
                 _replies=GetConversationsReplies(param)
                 replies=copy.deepcopy(_replies)
                 while _replies["has_more"]:
+                    print(".", end="", flush=True)
                     param["cursor"] = _replies["response_metadata"]["next_cursor"]
                     _replies = GetConversationsReplies(param)
                     replies["messages"]+=_replies["messages"]
@@ -154,6 +163,7 @@ def main():
                 replies["messages"]=[x for x in replies["messages"] if x["thread_ts"] != x["ts"]]
                 msg["replies_body"]=replies
         ch["history"]=history
+        print(" done", flush=True)
 
     #save
     with open("users.json","w",encoding="utf8") as fp:
