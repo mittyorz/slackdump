@@ -8,13 +8,20 @@ import os,sys,re
 import json
 import argparse
 import copy
+import time
 
 BASE_URL='https://slack.com/api/'
 
 def requestBody(url,param):
     res=requests.get(url,param)
     res.encoding = res.apparent_encoding
-    if not res.ok: raise RuntimeError(res.text)
+    if not res.ok:
+        if "Retry-After" in res.headers:
+            sec = int(res.headers["Retry-After"]) + 10
+            print(" ", url, " : rate limit exceeded, waiting ", sec, "seconds ", end="", flush=True)
+            time.sleep(sec)
+            return requestBody(url,param)
+        raise RuntimeError(res.text)
     j=res.json()
     if not j["ok"]: raise RuntimeError(j["error"])
     return j
