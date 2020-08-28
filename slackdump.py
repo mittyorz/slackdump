@@ -144,15 +144,19 @@ def main():
         if "response_metadata" in history: del history["response_metadata"]
         print(" done", flush=True)
 
-        #50 limits per minute に引っかかりそう
-        #適当に待った方がいいかも
-        print("retrieving thread of messages ", end="", flush=True)
+        thread_count = 0
         for msg in history["messages"]:
             if "user" in msg:
                 for u in users["members"]:
                     if msg["user"] == u["id"]:
                         channel_users[msg["user"]] = u
             if "thread_ts" in msg:
+                thread_count+=1
+
+        thnum = 0
+        for msg in history["messages"]:
+            if "thread_ts" in msg:
+                print("\rretrieving thread of messages %d/%d " % (thnum, thread_count) , end="", flush=True)
                 print(".", end="", flush=True)
                 param=GetConversationsRepliesRequestParam(token,ch["id"],msg["ts"])
                 param["limit"]=10
@@ -169,6 +173,7 @@ def main():
                 if "response_metadata" in replies: del replies["response_metadata"]
                 replies["messages"]=[x for x in replies["messages"] if x["thread_ts"] != x["ts"]]
                 msg["replies_body"]=replies
+                thnum+=1
         print(" done", flush=True)
         ch["history"]=history
 
