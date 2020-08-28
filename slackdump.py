@@ -142,31 +142,35 @@ def main():
             history["messages"]+=_history["messages"]
         history["has_more"]=False
         if "response_metadata" in history: del history["response_metadata"]
+        print(" done", flush=True)
 
         #50 limits per minute に引っかかりそう
         #適当に待った方がいいかも
+        print("retrieving thread of messages ", end="", flush=True)
         for msg in history["messages"]:
             if "user" in msg:
                 for u in users["members"]:
                     if msg["user"] == u["id"]:
                         channel_users[msg["user"]] = u
             if "thread_ts" in msg:
+                print(".", end="", flush=True)
                 param=GetConversationsRepliesRequestParam(token,ch["id"],msg["ts"])
-                param["limit"]=1000
+                param["limit"]=10
                 _replies=GetConversationsReplies(param)
-                time.sleep(1)   # rate limit of conversations.replies is 50+ per minute
                 replies=copy.deepcopy(_replies)
+                time.sleep(1)   # rate limit of conversations.replies is 50+ per minute
                 while _replies["has_more"]:
-                    print(".", end="", flush=True)
+                    print("+", end="", flush=True)
                     param["cursor"] = _replies["response_metadata"]["next_cursor"]
                     _replies = GetConversationsReplies(param)
                     replies["messages"]+=_replies["messages"]
+                    time.sleep(1)   # rate limit of conversations.replies is 50+ per minute
                 replies["has_more"]=False
                 if "response_metadata" in replies: del replies["response_metadata"]
                 replies["messages"]=[x for x in replies["messages"] if x["thread_ts"] != x["ts"]]
                 msg["replies_body"]=replies
-        ch["history"]=history
         print(" done", flush=True)
+        ch["history"]=history
 
     #save
     with open("users.json","w",encoding="utf8") as fp:
