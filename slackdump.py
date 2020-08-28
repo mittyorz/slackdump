@@ -32,7 +32,7 @@ def GetUsersListRequestParam(token):
         'token' : token,
         #'cursor' : '',
         'include_locale' : False,
-        'limits' : 0
+        'limit' : 0
     }
 def GetUsersList(param):
     return requestBody(BASE_URL+'users.list',param)
@@ -45,7 +45,7 @@ def GetConversationsHistoryRequestParam(token,id):
         'inclusive' : False,
         #'latest' : 'now',
         #'oldest' : '0',
-        'limits' : 100
+        'limit' : 100
     }
 def GetConversationsHistory(param):
     return requestBody(BASE_URL+'conversations.history',param)
@@ -129,7 +129,7 @@ def main():
     for ch in channels:
         print("retrieving conversation's history .", end="", flush=True)
         param = GetConversationsHistoryRequestParam(token,ch["id"])
-        param["limits"]=1000
+        param["limit"]=1000
         if latest_ts!='now': param["latest"]=latest_ts
         if oldest_ts!='0': param["oldest"]=oldest_ts
         _history = GetConversationsHistory(param)
@@ -152,8 +152,9 @@ def main():
                         channel_users[msg["user"]] = u
             if "thread_ts" in msg:
                 param=GetConversationsRepliesRequestParam(token,ch["id"],msg["ts"])
-                param["limits"]=1000
+                param["limit"]=1000
                 _replies=GetConversationsReplies(param)
+                time.sleep(1)   # rate limit of conversations.replies is 50+ per minute
                 replies=copy.deepcopy(_replies)
                 while _replies["has_more"]:
                     print(".", end="", flush=True)
